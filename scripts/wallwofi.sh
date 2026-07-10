@@ -1,0 +1,27 @@
+#!/bin/bash
+
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-1}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export HOME="${HOME:-/home/v3nom}"
+
+WALL_DIR="$HOME/Downloads/Wallpapers"
+SETWALL="$HOME/.config/hypr/scripts/setwall.sh"
+
+[ -d "$WALL_DIR" ] || {
+    notify-send "wallwofi" "Directorio no encontrado: $WALL_DIR"
+    exit 1
+}
+
+WALL=$(find "$WALL_DIR" -type f \( \
+    -iname "*.jpg" -o \
+    -iname "*.jpeg" -o \
+    -iname "*.png" -o \
+    -iname "*.webp" \
+    \) | wofi --show dmenu --prompt "")
+
+[ -z "$WALL" ] && exit 0
+
+[ -x "$SETWALL" ] || chmod +x "$SETWALL"
+bash "$SETWALL" "$WALL"
+
+~/.config/mako/scripts/update-colors.sh
