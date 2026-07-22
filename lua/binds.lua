@@ -62,8 +62,8 @@ local cfg = {
 		'SUPER SHIFT, S, exec, grim -g "$(slurp)" - | wl-copy',
 
 		-- VOLUMEN F8 / F9 / F7
-		", F9, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%+",
-		", F8, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 1%-",
+		", F9, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+",
+		", F8, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
 		", F7, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
 
 		-- VOLUMEN MULTIMEDIA DELL
