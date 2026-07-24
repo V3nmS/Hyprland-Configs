@@ -2,6 +2,7 @@ local cfg = {
 	binde = {
 		-- APLICACIONES
 		"ALT, return, exec, kitty",
+		"ALT, S, exec, spotify",
 		"SUPER, E, exec, nautilus",
 		"SUPER SHIFT, D, exec, pkill rofi || rofi -show drun -theme ~/.config/rofi/style-3.rasi",
 		"SUPER, W, exec, bash /home/v3nom/.config/hypr/scripts/wallrofi.sh",
