@@ -203,8 +203,8 @@ local function apply(tbl, opts, label)
 			end
 		else
 			skip_count = skip_count + 1
+			log("OMITIDO [" .. label .. "] entry cruda: " .. entry)
 		end
-	end
 
 	log(label .. ": " .. ok_count .. " ok, " .. skip_count .. " omitidos")
 end
