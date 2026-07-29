@@ -240,7 +240,7 @@ function M.apply_workspace_binds()
 		end)
 
 		hl.bind("ALT + SHIFT + " .. i, function()
-			hl.dispatch(hl.dsp.window.move({ workspace = ws_id(i) }))
+			hl.dispatch(hl.dsp.window.move({ workspace = ws_id(i), silent = true }))
 		end)
 	end
 end
