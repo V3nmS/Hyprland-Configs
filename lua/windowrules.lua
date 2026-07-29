@@ -1,31 +1,26 @@
-return [[
-windowrule {
-	name = suppress_maximize_events
-	match:class = .*
+-- windowrules.lua
+hl.window_rule({
+	name = "suppress_maximize_events",
+	match = { class = ".*" },
+	suppress_event = "maximize",
+})
 
-	suppress_event = maximize 
-}
+hl.window_rule({
+	name = "fix-xwayland-drags",
+	match = {
+		class = "^$",
+		title = "^$",
+		xwayland = true,
+		float = true,
+		fullscreen = false,
+		pin = false,
+	},
+	no_focus = true,
+})
 
-windowrule {
-	name = fix-xwayland-drags
-	match:class = ^$
-	match:title = ^$
-	match:xwayland = true
-	match:float = true
-	match:fullscreen = false
-	match:pin = false
-
-	no_focus = true
-}
-
-windowrule {
-	name = move-hyprland-run
-
-	match:class = hyprland-run
-
-	move = 20 monitor_h-120
-	float = yes
-}
-
-
-]]
+hl.window_rule({
+	name = "move-hyprland-run",
+	match = { class = "hyprland-run" },
+	move = "20 monitor_h-120",
+	float = true,
+})

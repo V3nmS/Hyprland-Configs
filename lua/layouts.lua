@@ -1,12 +1,9 @@
-return [[
-# =============================================================================
-# LAYOUT
-# =============================================================================
-dwindle {
-    preserve_split = true
-}
-
-master {
-    new_status = master
-}
-]]
+-- layouts.lua
+hl.config({
+	dwindle = {
+		preserve_split = true,
+	},
+	master = {
+		new_status = "master",
+	},
+})

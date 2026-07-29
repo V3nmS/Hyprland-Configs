@@ -1,16 +1,13 @@
-return [[
-animations {
-    enabled = true
+-- animations.lua
+hl.config({
+	animations = { enabled = true },
+})
 
-    bezier = myBezier, 0.05, 0.9, 0.1, 1.05
+hl.curve("myBezier", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.05 } } })
 
-    animation = windows,     1, 7,  myBezier
-    animation = windowsOut,  1, 7,  default, popin 80%
-    animation = border,      1, 10, default
-    animation = borderangle, 1, 8,  default
-    animation = fade,        1, 7,  default
-    animation = workspaces,  1, 6,  default
-}
-
-
-]]
+hl.animation({ leaf = "windows", enabled = true, speed = 7, bezier = "myBezier" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 7, bezier = "default", style = "popin 80%" })
+hl.animation({ leaf = "border", enabled = true, speed = 10, bezier = "default" })
+hl.animation({ leaf = "borderangle", enabled = true, speed = 8, bezier = "default" })
+hl.animation({ leaf = "fade", enabled = true, speed = 7, bezier = "default" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "default" })
