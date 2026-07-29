@@ -87,9 +87,4 @@ local cfg = {
 	},
 }
 
-for i = 1, 9 do
-	table.insert(cfg.bind, string.format("ALT, %d, exec, hyprsome workspace %d", i, i))
-	table.insert(cfg.bind, string.format("ALT SHIFT, %d, exec, hyprsome move %d", i, i))
-end
-
 return cfg
