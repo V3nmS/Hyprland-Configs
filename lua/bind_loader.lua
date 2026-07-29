@@ -224,4 +224,25 @@ function M.apply_binds(cfg)
 	apply(cfg.bindm, { mouse = true }, "bindm")
 end
 
+-- Workspaces por monitor, nativo (reemplaza a hyprsome)
+-- Monitor 0 -> workspaces 1-9, monitor 1 -> 11-19, etc.
+function M.apply_workspace_binds()
+	local function ws_id(n)
+		local mon = hl.get_active_monitor()
+		return n + 10 * mon.id
+	end
+
+	for i = 1, 9 do
+		-- Envueltos en function() para que ws_id se evalúe AL APRETAR,
+		-- no al cargar el config (si no, el monitor queda congelado)
+		hl.bind("ALT + " .. i, function()
+			hl.dispatch(hl.dsp.focus({ workspace = ws_id(i) }))
+		end)
+
+		hl.bind("ALT + SHIFT + " .. i, function()
+			hl.dispatch(hl.dsp.window.move({ workspace = ws_id(i) }))
+		end)
+	end
+end
+
 return M
