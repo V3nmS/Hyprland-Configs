@@ -1,6 +1,6 @@
 -- monitors.lua
 -- output vacío = todos los monitores (comportamiento equivalente a "monitor=,preferred,auto,1")
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 
 -- exec-once (una sola vez al iniciar sesión)
 hl.on("hyprland.start", function()
