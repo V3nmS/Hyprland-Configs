@@ -139,7 +139,7 @@ local DISPATCHERS = {
 	end,
 
 	workspace = function(params)
-		return hl.dsp.workspace.change_id({ workspace = params })
+		return hl.dsp.focus({ workspace = params })
 	end,
 
 	fullscreen = function(params)
