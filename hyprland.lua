@@ -4,6 +4,7 @@
 package.path = package.path .. ";" .. os.getenv("HOME") .. "/.config/hypr/lua/?.lua"
 
 -- DSP_DUMP
+require("dsp_probe")
 require("dsp_dump")
 
 -- Monitors + su exec-once/exec asociado
