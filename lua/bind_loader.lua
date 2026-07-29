@@ -2,9 +2,11 @@
 -- Traduce las tablas de binds.lua (formato hyprlang "MODS, KEY, DISPATCHER, PARAMS")
 -- a llamadas reales de hl.bind(). No modifica binds.lua.
 --
--- Nombres de dispatcher: CONFIRMADOS contra /usr/share/hypr/stubs/hl.meta.lua
--- Forma de los argumentos: NO confirmada (el stub los expone como fun(...)).
--- Verifica cada uno con:  hyprctl dispatch 'hl.dsp.<lo que sea>(...)'
+-- Firmas confirmadas contra los errores que escupe Hyprland 0.56.1:
+--   hl.focus               -> { direction = "left"|"right"|"up"|"down" }
+--   hl.workspace.change_id -> { workspace = ... }  ('workspace' obligatorio)
+--   hl.window.resize       -> sin args, o { x, y, relative?, window? }
+--   hl.window.alter_zorder -> { mode = ... }       ('mode' obligatorio)
 
 local M = {}
 
@@ -65,11 +67,32 @@ local function build_keys(mods, key)
 end
 
 -- ---------------------------------------------------------------------------
+-- Helpers de conversión
+-- ---------------------------------------------------------------------------
+
+-- hyprlang usa l/r/u/d; hl.focus quiere la palabra completa
+local DIRECTIONS = {
+	l = "left",
+	r = "right",
+	u = "up",
+	d = "down",
+	left = "left",
+	right = "right",
+	up = "up",
+	down = "down",
+}
+
+-- "30 0" / "-30 0" / "0 -30"  ->  30, 0 / -30, 0 / 0, -30
+local function parse_xy(params)
+	local x, y = params:match("^(-?%d+)%s+(-?%d+)$")
+	return tonumber(x), tonumber(y)
+end
+
+-- ---------------------------------------------------------------------------
 -- Mapeo hyprlang -> hl.dsp.*
 -- ---------------------------------------------------------------------------
 
 local DISPATCHERS = {
-	-- Confirmado nombre + forma de args (wiki / example oficial)
 	exec = function(params)
 		return hl.dsp.exec_cmd(params)
 	end,
@@ -82,6 +105,7 @@ local DISPATCHERS = {
 		return hl.dsp.window.float({ action = "toggle" })
 	end,
 
+	-- bindm: sin argumentos
 	movewindow = function()
 		return hl.dsp.window.drag()
 	end,
@@ -90,36 +114,45 @@ local DISPATCHERS = {
 		return hl.dsp.window.resize()
 	end,
 
-	-- Nombre confirmado en el stub, forma de args POR VERIFICAR
-	-- OJO: focus vive en el namespace raíz, no en window
 	movefocus = function(params)
-		return hl.dsp.focus(params)
+		local dir = DIRECTIONS[params]
+
+		if not dir then
+			error("dirección desconocida: '" .. params .. "'")
+		end
+
+		return hl.dsp.focus({ direction = dir })
 	end,
 
-	-- params: "30 0", "-30 0", "0 -30", "0 30"
 	resizeactive = function(params)
-		return hl.dsp.window.resize(params)
+		local x, y = parse_xy(params)
+
+		if not x then
+			error("no pude parsear x/y de: '" .. params .. "'")
+		end
+
+		-- resizeactive de hyprlang es un delta, de ahí relative = true
+		return hl.dsp.window.resize({ x = x, y = y, relative = true })
 	end,
 
 	-- params: "+1", "-1", "e+1", "e-1"
-	-- OJO: es change_id, no change
 	workspace = function(params)
-		return hl.dsp.workspace.change_id(params)
+		return hl.dsp.workspace.change_id({ workspace = params })
 	end,
 
-	-- params: "0"
+	-- Aceptado sin error por Hyprland tal cual
 	fullscreen = function(params)
 		return hl.dsp.window.fullscreen(tonumber(params) or 0)
 	end,
 
-	-- params: "togglesplit", "togglepseudotile"
+	-- Aceptado sin error por Hyprland tal cual
 	layoutmsg = function(params)
 		return hl.dsp.layout(params)
 	end,
 
-	-- params: "bottom", "top"
+	-- params: "bottom" / "top"
 	alterzorder = function(params)
-		return hl.dsp.window.alter_zorder(params)
+		return hl.dsp.window.alter_zorder({ mode = params })
 	end,
 }
 
@@ -133,7 +166,7 @@ local function build_dispatcher(dispatcher, params)
 		local ok, result = pcall(builder, params)
 
 		if not ok then
-			log("ERROR construyendo '" .. dispatcher .. "': " .. tostring(result))
+			log("ERROR en '" .. dispatcher .. "': " .. tostring(result))
 			return nil
 		end
 
