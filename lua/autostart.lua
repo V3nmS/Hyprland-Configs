@@ -5,7 +5,7 @@ return [[
 
 exec-once = swayosd-server
 exec-once = awww-daemon
-exec-once = bash -c 'sleep 1; awww img /home/v3nom/Downloads/Wallpapers/skull.jpg
+exec-once = bash -c 'sleep 1; awww img /home/v3nom/Downloads/Wallpapers/kanji.jpg
 
 exec-once = bluetoothctl power on
 exec-once = bluetoothctl scan on
