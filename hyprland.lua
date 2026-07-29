@@ -3,6 +3,12 @@
 -- =============================================================================
 package.path = package.path .. ";" .. os.getenv("HOME") .. "/.config/hypr/lua/?.lua"
 
+hl.config({
+	debug = {
+		disable_logs = false,
+	},
+})
+
 -- DSP_DUMP
 require("dsp_probe")
 require("dsp_dump")
