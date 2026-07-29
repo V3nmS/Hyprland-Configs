@@ -67,6 +67,9 @@ local function apply(tbl, opts)
 	for _, entry in ipairs(tbl or {}) do
 		local p = split_bind(entry, 3)
 
+		print(build_keys(p[1], p[2]))
+		print(p[3], p[4])
+
 		hl.bind(build_keys(p[1], p[2]), build_dispatcher(p[3], p[4]), opts)
 	end
 end
