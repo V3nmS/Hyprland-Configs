@@ -2,15 +2,22 @@
 -- Traduce las tablas de binds.lua (formato hyprlang "MODS, KEY, DISPATCHER, PARAMS")
 -- a llamadas reales de hl.bind(). No modifica binds.lua.
 --
--- Firmas confirmadas contra los errores que escupe Hyprland 0.56.1:
+-- Firmas confirmadas contra los errores de Hyprland 0.56.1:
 --   hl.focus               -> { direction = "left"|"right"|"up"|"down" }
---   hl.workspace.change_id -> { workspace = ... }  ('workspace' obligatorio)
+--   hl.workspace.change_id -> { workspace = ... }  (ojo: ver nota abajo)
 --   hl.window.resize       -> sin args, o { x, y, relative?, window? }
---   hl.window.alter_zorder -> { mode = ... }       ('mode' obligatorio)
+--   hl.window.alter_zorder -> { mode = ... }
+--
+-- NOTA PENDIENTE: no está claro que change_id sea el dispatcher para *cambiar*
+-- de workspace (el nombre y su firma sugieren renumerar). Si ALT+X carga ok
+-- pero no cambia de workspace, hay que buscar otro dispatcher.
 
 local M = {}
 
+-- VERBOSE = true loguea las 75 entradas una por una. Útil para depurar,
+-- ponlo en false cuando todo jale.
 local DEBUG = true
+local VERBOSE = true
 
 local function log(msg)
 	if DEBUG then
@@ -67,10 +74,9 @@ local function build_keys(mods, key)
 end
 
 -- ---------------------------------------------------------------------------
--- Helpers de conversión
+-- Helpers
 -- ---------------------------------------------------------------------------
 
--- hyprlang usa l/r/u/d; hl.focus quiere la palabra completa
 local DIRECTIONS = {
 	l = "left",
 	r = "right",
@@ -82,7 +88,6 @@ local DIRECTIONS = {
 	down = "down",
 }
 
--- "30 0" / "-30 0" / "0 -30"  ->  30, 0 / -30, 0 / 0, -30
 local function parse_xy(params)
 	local x, y = params:match("^(-?%d+)%s+(-?%d+)$")
 	return tonumber(x), tonumber(y)
@@ -105,7 +110,6 @@ local DISPATCHERS = {
 		return hl.dsp.window.float({ action = "toggle" })
 	end,
 
-	-- bindm: sin argumentos
 	movewindow = function()
 		return hl.dsp.window.drag()
 	end,
@@ -131,26 +135,21 @@ local DISPATCHERS = {
 			error("no pude parsear x/y de: '" .. params .. "'")
 		end
 
-		-- resizeactive de hyprlang es un delta, de ahí relative = true
 		return hl.dsp.window.resize({ x = x, y = y, relative = true })
 	end,
 
-	-- params: "+1", "-1", "e+1", "e-1"
 	workspace = function(params)
 		return hl.dsp.workspace.change_id({ workspace = params })
 	end,
 
-	-- Aceptado sin error por Hyprland tal cual
 	fullscreen = function(params)
 		return hl.dsp.window.fullscreen(tonumber(params) or 0)
 	end,
 
-	-- Aceptado sin error por Hyprland tal cual
 	layoutmsg = function(params)
 		return hl.dsp.layout(params)
 	end,
 
-	-- params: "bottom" / "top"
 	alterzorder = function(params)
 		return hl.dsp.window.alter_zorder({ mode = params })
 	end,
@@ -162,23 +161,24 @@ local function build_dispatcher(dispatcher, params)
 
 	local builder = DISPATCHERS[dispatcher]
 
-	if builder then
-		local ok, result = pcall(builder, params)
-
-		if not ok then
-			log("ERROR en '" .. dispatcher .. "': " .. tostring(result))
-			return nil
-		end
-
-		if result == nil then
-			log("NIL devuelto por '" .. dispatcher .. "' (params: '" .. params .. "')")
-		end
-
-		return result
+	if not builder then
+		log("SIN MAPEAR -> " .. dispatcher .. " (params: '" .. params .. "')")
+		return nil
 	end
 
-	log("SIN MAPEAR -> " .. dispatcher .. " (params: '" .. params .. "')")
-	return nil
+	local ok, result = pcall(builder, params)
+
+	if not ok then
+		log("ERROR en '" .. dispatcher .. "': " .. tostring(result))
+		return nil
+	end
+
+	-- Caso silencioso: no truena pero tampoco devuelve dispatcher
+	if result == nil then
+		log("NIL devuelto por '" .. dispatcher .. "' (params: '" .. params .. "')")
+	end
+
+	return result
 end
 
 -- ---------------------------------------------------------------------------
@@ -196,6 +196,10 @@ local function apply(tbl, opts, label)
 		local keys = build_keys(p[1], p[2])
 		local dsp = build_dispatcher(p[3], p[4])
 
+		if VERBOSE then
+			log(label .. " | " .. (dsp and "OK  " or "SKIP") .. " | " .. entry)
+		end
+
 		if dsp then
 			local ok, err = pcall(hl.bind, keys, dsp, opts)
 
@@ -207,8 +211,9 @@ local function apply(tbl, opts, label)
 			end
 		else
 			skip_count = skip_count + 1
-			log("OMITIDO [" .. label .. "] entry cruda: " .. entry)
+			log("OMITIDO [" .. label .. "] " .. entry)
 		end
+	end
 
 	log(label .. ": " .. ok_count .. " ok, " .. skip_count .. " omitidos")
 end
