@@ -170,6 +170,10 @@ local function build_dispatcher(dispatcher, params)
 			return nil
 		end
 
+		if result == nil then
+			log("NIL devuelto por '" .. dispatcher .. "' (params: '" .. params .. "')")
+		end
+
 		return result
 	end
 
