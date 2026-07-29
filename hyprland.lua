@@ -42,7 +42,7 @@ require("input")
 -- Binds (bind / binde / bindm, vía el traductor)
 local bind_loader = require("bind_loader")
 bind_loader.apply_binds(require("binds"))
-
+bind_loader.apply_workspace_binds()
 -- Autostart (al final, para que si algo de arriba truena no te quedes
 -- sin terminal/waybar/mako a medias)
 require("autostart")
