@@ -10,7 +10,6 @@ hl.config({
 })
 
 -- DSP_DUMP
-require("dsp_probe")
 require("dsp_dump")
 
 -- Monitors + su exec-once/exec asociado
