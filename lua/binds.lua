@@ -1,96 +1,113 @@
-local cfg = {
-	binde = {
-		-- APLICACIONES
-		"ALT, return, exec, kitty",
-		"ALT, S, exec, spotify",
-		"SUPER, E, exec, nautilus",
-		"SUPER SHIFT, D, exec, pkill rofi || rofi -show drun -theme ~/.config/rofi/style-3.rasi",
-		"SUPER, W, exec, bash /home/v3nom/.config/hypr/scripts/wallrofi.sh",
-		"ALT, F, exec, zen-browser",
+-- binds.lua
+-- Migrado de hyprlang (mods, key, dispatcher, args) a la API nativa Lua de Hyprland.
 
-		-- GESTIÓN VENTANAS
-		"ALT, W, killactive,",
-		"ALT, P, layoutmsg, togglepseudotile",
-		"ALT, SPACE, layoutmsg, togglesplit",
-		"ALT, F11, fullscreen, 0",
-		"ALT, R, exec, ~/.config/waybar/scripts/launch.sh",
-		"ALT SHIFT, R, exec, ~/.config/hypr/scripts/reload.sh",
+-- ============ APLICACIONES ============
+-- ⚠️ Originalmente estaban en tu tabla "binde" (repeat-while-held).
+--    Repetir exec al mantener presionado abriría múltiples instancias
+--    (ej. varios kitty si dejas ALT+Return apachurrado). Las dejo SIN
+--    repeating por default -- avísame si de verdad las quieres repetibles.
+hl.bind("ALT+Return", hl.dsp.exec_cmd("kitty"))
+hl.bind("ALT+S", hl.dsp.exec_cmd("spotify"))
+hl.bind("SUPER+E", hl.dsp.exec_cmd("nautilus"))
+hl.bind("SUPER+SHIFT+D", hl.dsp.exec_cmd("pkill rofi || rofi -show drun -theme ~/.config/rofi/style-3.rasi"))
+hl.bind("SUPER+W", hl.dsp.exec_cmd("bash /home/v3nom/.config/hypr/scripts/wallrofi.sh"))
+hl.bind("ALT+F", hl.dsp.exec_cmd("zen-browser"))
 
-		-- WORKSPACES TAB
-		"ALT, X, workspace, +1",
-		"ALT, less, workspace, -1",
+-- ============ GESTIÓN VENTANAS ============
+hl.bind("ALT+W", hl.dsp.window.close())
+hl.bind("ALT+P", hl.dsp.window.pseudo()) -- reemplaza "layoutmsg, togglepseudotile"
+hl.bind("ALT+SPACE", hl.dsp.layout("togglesplit")) -- confirmado, dwindle only
+hl.bind("ALT+F11", hl.dsp.window.fullscreen()) -- ⚠️ sin confirmar el mapeo exacto del param "0" (modo). Prueba y si necesitas maximize/fake-fullscreen en vez de full, lo ajustamos.
+hl.bind("ALT+R", hl.dsp.exec_cmd("~/.config/waybar/scripts/launch.sh"))
+hl.bind("ALT+SHIFT+R", hl.dsp.exec_cmd("~/.config/hypr/scripts/reload.sh"))
 
-		-- bluetooth o wifi
-		"SUPER SHIFT, B, exec, ~/.config/rofi/scripts/bluetooth.sh",
-		"SUPER SHIFT, W, exec, networkmanager_dmenu -dmenu 'rofi -dmenu -i -theme /home/v3nom/.config/rofi/style-3.rasi'",
+-- ============ WORKSPACES TAB ============
+-- ⚠️ Sin confirmar si sigue siendo "+1"/"-1" o requiere el formato "e+1"/"e-1".
+hl.bind("ALT+X", hl.dsp.focus({ workspace = "+1" }))
+hl.bind("ALT+less", hl.dsp.focus({ workspace = "-1" }))
 
-		-- FOCUS
-		"ALT, l, movefocus, r",
-		"ALT, h, movefocus, l",
-		"ALT, k, movefocus, u",
-		"ALT, j, movefocus, d",
+-- ============ BLUETOOTH / WIFI ============
+hl.bind("SUPER+SHIFT+B", hl.dsp.exec_cmd("~/.config/rofi/scripts/bluetooth.sh"))
+hl.bind(
+	"SUPER+SHIFT+W",
+	hl.dsp.exec_cmd("networkmanager_dmenu -dmenu 'rofi -dmenu -i -theme /home/v3nom/.config/rofi/style-3.rasi'")
+)
 
-		-- RESIZE
-		"ALT SHIFT, l, resizeactive, 30 0",
-		"ALT SHIFT, h, resizeactive, -30 0",
-		"ALT SHIFT, k, resizeactive, 0 -30",
-		"ALT SHIFT, j, resizeactive, 0 30",
+-- ============ FOCUS ============
+hl.bind("ALT+l", hl.dsp.focus({ direction = "right" }))
+hl.bind("ALT+h", hl.dsp.focus({ direction = "left" }))
+hl.bind("ALT+k", hl.dsp.focus({ direction = "up" }))
+hl.bind("ALT+j", hl.dsp.focus({ direction = "down" }))
 
-		-- SCROLL WORKSPACES
-		"ALT, mouse_down, workspace, e+1",
-		"ALT, mouse_up, workspace, e-1",
+-- ============ RESIZE ============
+hl.bind("ALT+SHIFT+l", hl.dsp.window.resize({ x = 30, y = 0 }))
+hl.bind("ALT+SHIFT+h", hl.dsp.window.resize({ x = -30, y = 0 }))
+hl.bind("ALT+SHIFT+k", hl.dsp.window.resize({ x = 0, y = -30 }))
+hl.bind("ALT+SHIFT+j", hl.dsp.window.resize({ x = 0, y = 30 }))
 
-		-- SCREENSHOT
-		", Print, exec, grim ~/Pictures/screenshot_$(date +%F_%T).png",
-		'SHIFT, Print, exec, grim -g "$(slurp)" ~/Pictures/screenshot_$(date +%F_%T).png',
-	},
+-- ============ SCROLL WORKSPACES ============
+hl.bind("ALT+mouse_down", hl.dsp.focus({ workspace = "e+1" }))
+hl.bind("ALT+mouse_up", hl.dsp.focus({ workspace = "e-1" }))
 
-	bind = {
-		-- OPACIDAD
-		"ALT, O, exec, hyprctl keyword decoration:active_opacity 1.0 && hyprctl keyword decoration:inactive_opacity 1.0",
-		"ALT SHIFT, O, exec, hyprctl keyword decoration:active_opacity 1.00 && hyprctl keyword decoration:inactive_opacity 0.90",
+-- ============ SCREENSHOT ============
+hl.bind("Print", hl.dsp.exec_cmd("grim ~/Pictures/screenshot_$(date +%F_%T).png"))
+hl.bind("SHIFT+Print", hl.dsp.exec_cmd('grim -g "$(slurp)" ~/Pictures/screenshot_$(date +%F_%T).png'))
 
-		-- LOCK / LOGOUT
-		"SUPER, Escape, exec, wlogout --protocol layer-shell -b 3 --css ~/.config/wlogout/style.css --layout ~/.config/wlogout/layout",
-		"SUPER, L, exec, hyprlock",
+-- ============ OPACIDAD ============
+hl.bind(
+	"ALT+O",
+	hl.dsp.exec_cmd("hyprctl keyword decoration:active_opacity 1.0 && hyprctl keyword decoration:inactive_opacity 1.0")
+)
+hl.bind(
+	"ALT+SHIFT+O",
+	hl.dsp.exec_cmd(
+		"hyprctl keyword decoration:active_opacity 1.00 && hyprctl keyword decoration:inactive_opacity 0.90"
+	)
+)
 
-		-- FLOATING
-		"ALT, V, togglefloating",
-		"CTRL, TAB, alterzorder, bottom",
-		-- "CTRL, TAB, alterzorder, top",
+-- ============ LOCK / LOGOUT ============
+hl.bind(
+	"SUPER+Escape",
+	hl.dsp.exec_cmd(
+		"wlogout --protocol layer-shell -b 3 --css ~/.config/wlogout/style.css --layout ~/.config/wlogout/layout"
+	)
+)
+hl.bind("SUPER+L", hl.dsp.exec_cmd("hyprlock"))
 
-		-- SCREENSHOT REGIÓN
-		'SUPER SHIFT, S, exec, grim -g "$(slurp)" - | wl-copy',
+-- ============ FLOATING ============
+hl.bind("ALT+V", hl.dsp.window.float({ action = "toggle" }))
+hl.bind("CTRL+TAB", hl.dsp.exec_raw("alterzorder bottom")) -- ⚠️ no encontré equivalente nativo documentado, se queda con shim
+-- hl.bind("CTRL+TAB", hl.dsp.exec_raw("alterzorder top"))
 
-		-- VOLUMEN F8 / F9 / F7
-		", F9, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+",
-		", F8, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
-		", F7, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+-- ============ SCREENSHOT REGIÓN ============
+hl.bind("SUPER+SHIFT+S", hl.dsp.exec_cmd('grim -g "$(slurp)" - | wl-copy'))
 
-		-- VOLUMEN MULTIMEDIA DELL
-		", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+",
-		", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
-		", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+-- ============ VOLUMEN F7/F8/F9 ============
+-- ⚠️ Estas SÍ te conviene que sean repeating (para subir/bajar sostenido).
+--    Agrego { repeating = true } en las de sube/baja, no en la de mute.
+hl.bind("F9", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"), { repeating = true })
+hl.bind("F8", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { repeating = true })
+hl.bind("F7", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
 
-		-- BRILLO F10 / F11
-		", F11, exec, brightnessctl set 5%+",
-		", F10, exec, brightnessctl set 5%-",
+-- ============ VOLUMEN MULTIMEDIA DELL ============
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"), { repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { repeating = true })
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
 
-		-- BRILLO MULTIMEDIA DELL
-		", XF86MonBrightnessUp, exec, brightnessctl set 5%+",
-		", XF86MonBrightnessDown, exec, brightnessctl set 5%-",
+-- ============ BRILLO F10/F11 ============
+hl.bind("F11", hl.dsp.exec_cmd("brightnessctl set 5%+"), { repeating = true })
+hl.bind("F10", hl.dsp.exec_cmd("brightnessctl set 5%-"), { repeating = true })
 
-		--  Play Bottom
-		", XF86AudioPause, exec, playerctl play-pause",
-		", XF86AudioNext, exec, playerctl next",
-		", XF86AudioPrev, exec, playerctl previous",
-		-- ", XF86AudioStop, exec, playerctl stop",
-	},
+-- ============ BRILLO MULTIMEDIA DELL ============
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl set 5%+"), { repeating = true })
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl set 5%-"), { repeating = true })
 
-	bindm = {
-		"ALT, mouse:272, movewindow",
-		"ALT, mouse:273, resizewindow",
-	},
-}
+-- ============ PLAYERCTL ============
+hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"))
+hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"))
+hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"))
+-- hl.bind("XF86AudioStop", hl.dsp.exec_cmd("playerctl stop"))
 
-return cfg
+-- ============ BINDM (mouse) ============
+hl.bind("ALT+mouse:272", hl.dsp.window.drag(), { mouse = true })
+hl.bind("ALT+mouse:273", hl.dsp.window.resize(), { mouse = true })
