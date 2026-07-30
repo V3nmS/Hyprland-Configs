@@ -81,10 +81,10 @@ local cfg = {
 		", XF86MonBrightnessDown, exec, brightnessctl set 5%-",
 
 		--  Play Bottom
-		", XF86AudioPlay, exec, playerctl play-pause",
+		", XF86AudioPause, exec, playerctl play-pause",
 		", XF86AudioNext, exec, playerctl next",
 		", XF86AudioPrev, exec, playerctl previous",
-		", XF86AudioStop, exec, playerctl stop",
+		-- ", XF86AudioStop, exec, playerctl stop",
 	},
 
 	bindm = {
