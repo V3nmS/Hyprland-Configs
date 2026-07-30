@@ -37,10 +37,10 @@ local cfg = {
 		"ALT SHIFT, j, resizeactive, 0 30",
 
 		-- MOVE WINDOWS
-		"CTRL SHIFT, h, movewindow, l",
-		"CTRL SHIFT, l, movewindow, r",
-		"CTRL SHIFT, j, movewindow, d",
-		"CTRL SHIFT, k, movewindow, u",
+		"CTRL SHIFT, h, moveactive, l",
+		"CTRL SHIFT, l, moveactive, r",
+		"CTRL SHIFT, j, moveactive, d",
+		"CTRL SHIFT, k, moveactive, u",
 
 		-- SCROLL WORKSPACES
 		"ALT, mouse_down, workspace, e+1",
