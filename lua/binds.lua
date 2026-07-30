@@ -25,8 +25,8 @@ local cfg = {
 		"SUPER SHIFT, W, exec, networkmanager_dmenu -dmenu 'rofi -dmenu -i -theme /home/v3nom/.config/rofi/style-3.rasi'",
 
 		-- FOCUS
-		"ALT, l, movefocus, l",
-		"ALT, h, movefocus, r",
+		"ALT, l, movefocus, r",
+		"ALT, h, movefocus, l",
 		"ALT, k, movefocus, u",
 		"ALT, j, movefocus, d",
 
@@ -35,6 +35,12 @@ local cfg = {
 		"ALT SHIFT, h, resizeactive, -30 0",
 		"ALT SHIFT, k, resizeactive, 0 -30",
 		"ALT SHIFT, j, resizeactive, 0 30",
+
+		-- MOVE WINDOWS
+		"CTRL SHIFT, h, movewindow, l",
+		"CTRL SHIFT, l, movewindow, r",
+		"CTRL SHIFT, j, movewindow, d",
+		"CTRL SHIFT, k, movewindow, u",
 
 		-- SCROLL WORKSPACES
 		"ALT, mouse_down, workspace, e+1",
