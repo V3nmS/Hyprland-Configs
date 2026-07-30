@@ -111,3 +111,15 @@ hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"))
 -- ============ BINDM (mouse) ============
 hl.bind("ALT+mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind("ALT+mouse:273", hl.dsp.window.resize(), { mouse = true })
+
+-- ============ WORKSPACES POR NÚMERO ============
+for i = 1, 9 do
+	hl.bind("ALT+" .. i, hl.dsp.focus({ workspace = i }))
+end
+hl.bind("ALT+0", hl.dsp.focus({ workspace = 10 })) -- 0 mapea a ws 10, convención estándar
+
+-- ============ MOVE WINDOWS (tiled) ============
+hl.bind("CTRL+SUPER+h", hl.dsp.window.move({ direction = "left" }))
+hl.bind("CTRL+SUPER+l", hl.dsp.window.move({ direction = "right" }))
+hl.bind("CTRL+SUPER+k", hl.dsp.window.move({ direction = "up" }))
+hl.bind("CTRL+SUPER+j", hl.dsp.window.move({ direction = "down" }))
