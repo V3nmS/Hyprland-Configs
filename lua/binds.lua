@@ -30,12 +30,6 @@ local cfg = {
 		"ALT, k, movefocus, u",
 		"ALT, j, movefocus, d",
 
-		-- MOVE WINDOWS
-		hl.bind("CTRL+SHIFT+h", hl.dsp.window.move({ direction = "left" })),
-		hl.bind("CTRL+SHIFT+l", hl.dsp.window.move({ direction = "right" })),
-		hl.bind("CTRL+SHIFT+k", hl.dsp.window.move({ direction = "up" })),
-		hl.bind("CTRL+SHIFT+j", hl.dsp.window.move({ direction = "down" })),
-
 		-- RESIZE
 		"ALT SHIFT, l, resizeactive, 30 0",
 		"ALT SHIFT, h, resizeactive, -30 0",
