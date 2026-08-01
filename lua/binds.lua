@@ -116,8 +116,8 @@ hl.bind("SUPER+BackSpace", set_scrolling(false), { description = "regresar este 
 -- Recorrer la cinta SIN cambiar de ventana, como arrastrarla con la mano.
 -- Para cambiar el foco usa ALT+h/l: en scrolling brincan de columna y, con
 -- follow_focus = true, la vista se recorre sola.
-hl.bind("SUPER+X", hl.dsp.layout("move +col"), { repeating = true }) -- derecha
-hl.bind("SUPER+less", hl.dsp.layout("move -col"), { repeating = true }) -- izquierda
+-- hl.bind("SUPER+X", hl.dsp.layout("move +col"), { repeating = true }) -- derecha
+-- hl.bind("SUPER+less", hl.dsp.layout("move -col"), { repeating = true }) -- izquierda
 
 -- Reordenar la cinta: intercambia tu columna con la vecina.
 hl.bind("SUPER+SHIFT+X", hl.dsp.layout("swapcol r"))
