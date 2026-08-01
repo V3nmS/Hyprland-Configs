@@ -6,6 +6,20 @@
 --    Repetir exec al mantener presionado abriría múltiples instancias
 --    (ej. varios kitty si dejas ALT+Return apachurrado). Las dejo SIN
 --    repeating por default -- avísame si de verdad las quieres repetibles.
+
+local f = io.open("/tmp/hlds_full.txt", "w")
+local function dump(t, prefix)
+	for k, v in pairs(t) do
+		if type(v) == "table" then
+			dump(v, prefix .. k .. ".")
+		else
+			f:write(prefix .. k .. " (" .. type(v) .. ")\n")
+		end
+	end
+end
+dump(hl.dsp, "hl.dsp.")
+f:close()
+
 hl.bind("ALT+Return", hl.dsp.exec_cmd("kitty"))
 hl.bind("ALT+S", hl.dsp.exec_cmd("spotify"))
 hl.bind("SUPER+E", hl.dsp.exec_cmd("nautilus"))
