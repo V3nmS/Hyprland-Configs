@@ -107,6 +107,25 @@ hl.bind("SUPER+G", hl.dsp.layout("fit visible")) -- acomodar todas las visibles
 -- Ciclar los anchos de explicit_column_widths (layouts.lua): 33% -> 50% -> 66% -> 100%
 hl.bind("SUPER+P", hl.dsp.layout("colresize +conf"))
 
+-- La columna se come la pantalla completa y empuja las demás fuera de vista,
+-- sin cerrarlas ni sacarlas del workspace: siguen en la cinta, a la derecha.
+-- Vuelve a apretarlo y regresa a la mitad.
+-- No es el fullscreen de ALT+F11: aquí no se tapa la waybar y las otras
+-- ventanas se recorren de verdad (medido: 947px -> 1897px, la vecina a x=1913).
+hl.bind("SUPER+M", function()
+	local win = hl.get_active_window()
+	local mon = hl.get_active_monitor()
+	if not win or not mon then
+		return
+	end
+
+	-- Comparamos contra el ancho del monitor. El 0.9 da margen para los gaps:
+	-- "pantalla completa" mide 1897 de 1920, o sea 0.988.
+	local ocupa = win.size.x / mon.width
+
+	hl.dispatch(hl.dsp.layout("colresize " .. (ocupa > 0.9 and "0.5" or "1.0")))
+end, { description = "columna a pantalla completa / a la mitad" })
+
 -- Congelar la vista para que no se recorra sola al cambiar de foco.
 hl.bind("SUPER+I", hl.dsp.layout("inhibit_scroll"))
 
