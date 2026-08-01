@@ -120,6 +120,10 @@ for i = 1, 9 do
 end
 hl.bind("ALT+0", hl.dsp.focus({ workspace = 10 })) -- 0 mapea a ws 10, convención estándar
 
+for k, v in pairs(hl.dsp) do
+	print(k)
+end
+
 -- ============ MOVE WINDOWS (tiled) ============
 hl.bind("CTRL+SUPER+h", hl.dsp.window.move({ direction = "left" }))
 hl.bind("CTRL+SUPER+l", hl.dsp.window.move({ direction = "right" }))
