@@ -97,7 +97,7 @@ hl.bind("SUPER+W", hl.dsp.exec_cmd("bash /home/v3nom/.config/hypr/scripts/wallro
 -- =============================================================================
 hl.bind("ALT+W", hl.dsp.window.close())
 hl.bind("ALT+P", hl.dsp.window.pseudo())
-hl.bind("ALT+V", hl.dsp.window.float({ action = "toggle" }))
+hl.bind("SPACE+V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind("ALT+F11", hl.dsp.window.fullscreen()) -- sin args = toggle fullscreen
 hl.bind("ALT+SPACE", hl.dsp.layout("togglesplit")) -- dwindle only, inerte en scrolling
 hl.bind("ALT+R", hl.dsp.exec_cmd("~/.config/waybar/scripts/launch.sh"))
