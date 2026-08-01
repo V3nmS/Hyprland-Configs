@@ -69,22 +69,38 @@ hl.bind("ALT+F", hl.dsp.exec_cmd("zen-browser"))
 -- con initial_window_width 1200, y kitty pide ese tamaño por encima de la
 -- regla de Hyprland. Medido: con `yes` salía 1099x741, con `no` sale 960x756.
 -- Va como override del comando para no tocar tu kitty.conf global.
-hl.bind("SUPER+E", function()
-	local existe = false
+local function yazi_abierto()
 	for _, w in ipairs(hl.get_windows()) do
 		if w.class == "yazi-float" then
-			existe = true
-			break
+			return true
 		end
 	end
+	return false
+end
 
-	-- Lanzarlo NO muestra el special workspace solo (comprobado: el workspace
-	-- activo seguía siendo el 1), así que el toggle va en ambos casos.
-	if not existe then
+-- Al lanzarlo NO basta con pedir el toggle de inmediato: exec_cmd es asíncrono
+-- y el special todavía está vacío cuando corre (comprobado: yazi terminaba
+-- abierto pero ESCONDIDO, con specialWorkspace vacío). Tampoco sirve un delay
+-- fijo, porque cuánto tarda kitty+yazi en arrancar depende de la máquina.
+-- Esto reintenta cada 150 ms hasta que la ventana exista, máximo ~3 s.
+local function mostrar_cuando_abra(intentos)
+	hl.timer(function()
+		if yazi_abierto() then
+			hl.dispatch(hl.dsp.workspace.toggle_special("yazi"))
+		elseif intentos > 0 then
+			mostrar_cuando_abra(intentos - 1)
+		end
+	end, { timeout = 150, type = "oneshot" })
+end
+
+hl.bind("SUPER+E", function()
+	if yazi_abierto() then
+		-- Ya existe: mostrar u ocultar, según cómo esté.
+		hl.dispatch(hl.dsp.workspace.toggle_special("yazi"))
+	else
 		hl.dispatch(hl.dsp.exec_cmd("kitty --class yazi-float -o remember_window_size=no -e yazi"))
+		mostrar_cuando_abra(20)
 	end
-
-	hl.dispatch(hl.dsp.workspace.toggle_special("yazi"))
 end, { description = "toggle yazi flotante y centrado" })
 hl.bind("SUPER+SHIFT+D", hl.dsp.exec_cmd("pkill rofi || rofi -show drun -theme ~/.config/rofi/style-3.rasi"))
 hl.bind("SUPER+W", hl.dsp.exec_cmd("bash /home/v3nom/.config/hypr/scripts/wallrofi.sh"))
