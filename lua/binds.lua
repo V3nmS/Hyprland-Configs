@@ -45,6 +45,8 @@ hl.bind("ALT+SHIFT+h", hl.dsp.window.resize({ x = -30, y = 0, relative = true })
 hl.bind("ALT+SHIFT+k", hl.dsp.window.resize({ x = 0, y = -30, relative = true }))
 hl.bind("ALT+SHIFT+j", hl.dsp.window.resize({ x = 0, y = 30, relative = true }))
 
+-- ========== MOVE TO WORKSPACE =============--
+
 -- ============ SCROLL WORKSPACES ============
 hl.bind("ALT+mouse_down", hl.dsp.focus({ workspace = "e+1" }))
 hl.bind("ALT+mouse_up", hl.dsp.focus({ workspace = "e-1" }))
