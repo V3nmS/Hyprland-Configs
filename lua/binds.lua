@@ -141,13 +141,7 @@ hl.bind("ALT+0", hl.dsp.focus({ workspace = 10 })) -- 0 mapea a ws 10, convenciÃ
 -- end
 -- hl.bind("ALT+SHIFT+0", hl.dsp.workspace.move({ workspace = 10, silent = true })) -- 0 mapea a ws 10
 --
-local ok, res = pcall(function()
-	return hl.dsp.window.move({})
-end)
-
-local f = io.open("/tmp/probe_window_move.txt", "w")
-f:write("[probe] window.move({}) -> " .. (ok and tostring(res) or ("ERR: " .. tostring(res))) .. "\n")
-f:close()
+hl.bind("ALT+SHIFT+9", hl.dsp.window.move({ workspace = 9 }))
 -- ============ MOVE WINDOWS (tiled) ============
 hl.bind("CTRL+SUPER+h", hl.dsp.window.move({ direction = "left" }))
 hl.bind("CTRL+SUPER+l", hl.dsp.window.move({ direction = "right" }))
