@@ -163,8 +163,8 @@ hl.bind("CTRL+SUPER+j", hl.dsp.window.move({ direction = "down" }))
 -- "e+1" / "e-1" pasa por los workspaces vacíos; "+1" / "-1" los salta.
 -- Antes el teclado usaba "+1"/"-1" y el scroll del mouse "e+1"/"e-1".
 -- Unificado a e±1 para que ambos se sientan igual.
-hl.bind("ALT+X", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind("ALT+less", hl.dsp.focus({ workspace = "e-1" }))
+hl.bind("ALT+X", hl.dsp.focus({ workspace = "+1" }))
+hl.bind("ALT+less", hl.dsp.focus({ workspace = "-1" }))
 
 hl.bind("ALT+mouse_down", hl.dsp.focus({ workspace = "e+1" }))
 hl.bind("ALT+mouse_up", hl.dsp.focus({ workspace = "e-1" }))
