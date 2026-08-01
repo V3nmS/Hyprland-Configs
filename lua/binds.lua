@@ -120,8 +120,8 @@ hl.bind("SUPER+BackSpace", set_scrolling(false), { description = "regresar este 
 -- hl.bind("SUPER+less", hl.dsp.layout("move -col"), { repeating = true }) -- izquierda
 
 -- Reordenar la cinta: intercambia tu columna con la vecina.
-hl.bind("SUPER+SHIFT+X", hl.dsp.layout("swapcol r"))
-hl.bind("SUPER+SHIFT+less", hl.dsp.layout("swapcol l"))
+hl.bind("SUPER+SHIFT+l", hl.dsp.layout("swapcol r"))
+hl.bind("SUPER+SHIFT+h", hl.dsp.layout("swapcol l"))
 
 -- Una columna puede llevar varias ventanas apiladas.
 hl.bind("SUPER+Return", hl.dsp.layout("promote")) -- sacar la ventana a su propia columna
