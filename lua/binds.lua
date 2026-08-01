@@ -86,26 +86,29 @@ hl.bind("SUPER+BackSpace", set_scrolling(false), { description = "regresar este 
 -- Recorrer la cinta SIN cambiar de ventana, como arrastrarla con la mano.
 -- Para cambiar el foco usa ALT+h/l: en scrolling brincan de columna y, con
 -- follow_focus = true, la vista se recorre sola.
-hl.bind("SUPER+X", scroll_msg("move +col"), { repeating = true }) -- derecha
-hl.bind("SUPER+less", scroll_msg("move -col"), { repeating = true }) -- izquierda
+hl.bind("SUPER+X", hl.dsp.layout("move +col"), { repeating = true }) -- derecha
+hl.bind("SUPER+less", hl.dsp.layout("move -col"), { repeating = true }) -- izquierda
 
 -- Reordenar la cinta: intercambia tu columna con la vecina.
-hl.bind("SUPER+SHIFT+X", scroll_msg("swapcol r"))
-hl.bind("SUPER+SHIFT+less", scroll_msg("swapcol l"))
+hl.bind("SUPER+SHIFT+X", hl.dsp.layout("swapcol r"))
+hl.bind("SUPER+SHIFT+less", hl.dsp.layout("swapcol l"))
 
 -- Una columna puede llevar varias ventanas apiladas.
-hl.bind("SUPER+Return", scroll_msg("promote")) -- sacar la ventana a su propia columna
-hl.bind("SUPER+C", scroll_msg("consume_or_expel next")) -- apilarla en la columna vecina
+hl.bind("SUPER+Return", hl.dsp.layout("promote")) -- sacar la ventana a su propia columna
+hl.bind("SUPER+C", hl.dsp.layout("consume_or_expel next")) -- apilarla en la columna vecina
 
 -- Encajar columnas en la pantalla.
-hl.bind("SUPER+F", scroll_msg("fit_into_view")) -- la activa completa a la vista
-hl.bind("SUPER+SHIFT+F", scroll_msg("fit expand")) -- estirarla al espacio que sobra
+-- Ojo: si todas tus columnas ya caben, estos NO hacen nada visible. No es que
+-- estén rotos: no hay nada que encajar ni espacio libre que rellenar.
+hl.bind("SUPER+F", hl.dsp.layout("fit_into_view")) -- la activa completa a la vista
+hl.bind("SUPER+SHIFT+F", hl.dsp.layout("fit expand")) -- estirarla al espacio que sobra
+hl.bind("SUPER+G", hl.dsp.layout("fit visible")) -- acomodar todas las visibles
 
 -- Ciclar los anchos de explicit_column_widths (layouts.lua): 33% -> 50% -> 66% -> 100%
-hl.bind("SUPER+P", scroll_msg("colresize +conf"))
+hl.bind("SUPER+P", hl.dsp.layout("colresize +conf"))
 
 -- Congelar la vista para que no se recorra sola al cambiar de foco.
-hl.bind("SUPER+I", scroll_msg("inhibit_scroll"))
+hl.bind("SUPER+I", hl.dsp.layout("inhibit_scroll"))
 
 -- =============================================================================
 -- FOCUS
@@ -157,8 +160,7 @@ hl.bind("CTRL+SUPER+j", hl.dsp.window.move({ direction = "down" }))
 -- WORKSPACES
 -- =============================================================================
 -- "e+1" / "e-1" pasa por los workspaces vacíos; "+1" / "-1" los salta.
--- Antes el teclado usaba "+1"/"-1" y el scroll del mouse "e+1"/"e-1".
--- Unificado a e±1 para que ambos se sientan igual.
+-- A propósito distintos: el teclado salta los vacíos, el scroll del mouse no.
 hl.bind("ALT+X", hl.dsp.focus({ workspace = "+1" }))
 hl.bind("ALT+less", hl.dsp.focus({ workspace = "-1" }))
 
