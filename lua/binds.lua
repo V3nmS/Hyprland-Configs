@@ -54,10 +54,10 @@ hl.bind("ALT+k", hl.dsp.focus({ direction = "up" }))
 hl.bind("ALT+j", hl.dsp.focus({ direction = "down" }))
 
 -- ============ RESIZE ============
-hl.bind("ALT+SHIFT+l", hl.dsp.window.resize({ x = 30, y = 0, relative = true, repeating = true }))
-hl.bind("ALT+SHIFT+h", hl.dsp.window.resize({ x = -30, y = 0, relative = true, repeating = true }))
-hl.bind("ALT+SHIFT+k", hl.dsp.window.resize({ x = 0, y = -30, relative = true, repeating = true }))
-hl.bind("ALT+SHIFT+j", hl.dsp.window.resize({ x = 0, y = 30, relative = true, repeating = true }))
+hl.bind("ALT+SHIFT+l", hl.dsp.window.resize({ x = 30, y = 0, relative = true }))
+hl.bind("ALT+SHIFT+h", hl.dsp.window.resize({ x = -30, y = 0, relative = true }))
+hl.bind("ALT+SHIFT+k", hl.dsp.window.resize({ x = 0, y = -30, relative = true }))
+hl.bind("ALT+SHIFT+j", hl.dsp.window.resize({ x = 0, y = 30, relative = true }))
 
 -- ========== MOVE TO WORKSPACE =============--
 
