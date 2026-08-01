@@ -78,28 +78,15 @@ local function yazi_abierto()
 	return false
 end
 
--- Al lanzarlo NO basta con pedir el toggle de inmediato: exec_cmd es asíncrono
--- y el special todavía está vacío cuando corre (comprobado: yazi terminaba
--- abierto pero ESCONDIDO, con specialWorkspace vacío). Tampoco sirve un delay
--- fijo, porque cuánto tarda kitty+yazi en arrancar depende de la máquina.
--- Esto reintenta cada 150 ms hasta que la ventana exista, máximo ~3 s.
-local function mostrar_cuando_abra(intentos)
-	hl.timer(function()
-		if yazi_abierto() then
-			hl.dispatch(hl.dsp.workspace.toggle_special("yazi"))
-		elseif intentos > 0 then
-			mostrar_cuando_abra(intentos - 1)
-		end
-	end, { timeout = 150, type = "oneshot" })
-end
-
+-- Cuando la ventana nace, la regla la manda al special y Hyprland lo muestra
+-- SOLO. Por eso al lanzar no hay que pedir nada más: un toggle extra ahí
+-- escondería lo que acabas de abrir. Medido: special=special:yazi desde los
+-- 500 ms, sin ningún dispatch de más.
 hl.bind("SUPER+E", function()
 	if yazi_abierto() then
-		-- Ya existe: mostrar u ocultar, según cómo esté.
 		hl.dispatch(hl.dsp.workspace.toggle_special("yazi"))
 	else
 		hl.dispatch(hl.dsp.exec_cmd("kitty --class yazi-float -o remember_window_size=no -e yazi"))
-		mostrar_cuando_abra(20)
 	end
 end, { description = "toggle yazi flotante y centrado" })
 hl.bind("SUPER+SHIFT+D", hl.dsp.exec_cmd("pkill rofi || rofi -show drun -theme ~/.config/rofi/style-3.rasi"))
