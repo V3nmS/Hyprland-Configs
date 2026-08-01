@@ -4,14 +4,18 @@
 -- =============================================================================
 -- HELPERS SCROLLING
 -- =============================================================================
--- El layout scrolling se prende por workspace, no global. Aquí llevamos la
--- cuenta de cuáles lo traen activo, porque los layoutmsg de scrolling
--- (colresize, move +col, etc.) TRUENAN si los mandas estando en dwindle:
---   "Unknown dwindle layoutmsg: colresize +0.02"
--- Por eso los binds compartidos preguntan primero en qué layout estás.
+-- El layout scrolling se prende por workspace, no global.
 --
--- Ojo: este estado vive en memoria. Al recargar la config se vacía y todos los
--- workspaces regresan a dwindle, que es el default de general.layout.
+-- Mandar un layoutmsg de scrolling estando en dwindle es INOFENSIVO: Hyprland
+-- solo escupe "Unknown dwindle layoutmsg: ..." al log y sigue como si nada.
+-- Comprobado con pcall: ok=true, err=nil. Por eso los binds de scrolling van
+-- directos, sin preguntar en qué layout estás.
+--
+-- El único que sí necesita distinguir es ALT+SHIFT+h/l, porque window.resize
+-- es inerte en scrolling (medido: 947px -> 947px) y ahí toca usar colresize.
+-- Para eso llevamos esta tabla, que solo escriben SUPER+SPACE / SUPER+BackSpace.
+-- Vive en memoria: al recargar se vacía, y el reload también regresa todo a
+-- dwindle, así que los dos quedan sincronizados.
 
 local scrolling_ws = {}
 
@@ -47,14 +51,6 @@ local function set_scrolling(on)
 	end
 end
 
--- Manda un layoutmsg solo si el workspace actual está en scrolling.
-local function scroll_msg(msg)
-	return function()
-		if is_scrolling() then
-			hl.dispatch(hl.dsp.layout(msg))
-		end
-	end
-end
 
 -- =============================================================================
 -- APLICACIONES
