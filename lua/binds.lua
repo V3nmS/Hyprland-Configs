@@ -141,7 +141,7 @@ hl.bind("ALT+0", hl.dsp.focus({ workspace = 10 })) -- 0 mapea a ws 10, convenci√
 -- end
 -- hl.bind("ALT+SHIFT+0", hl.dsp.workspace.move({ workspace = 10, silent = true })) -- 0 mapea a ws 10
 --
-hl.bind("ALT+SHIFT+9", hl.dsp.window.move({ workspace = 9 }))
+hl.bind("ALT+SHIFT+9", hl.dsp.window.move({ workspace = 2 }))
 -- ============ MOVE WINDOWS (tiled) ============
 hl.bind("CTRL+SUPER+h", hl.dsp.window.move({ direction = "left" }))
 hl.bind("CTRL+SUPER+l", hl.dsp.window.move({ direction = "right" }))
