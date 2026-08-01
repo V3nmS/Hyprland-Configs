@@ -57,7 +57,7 @@ end
 hl.bind("ALT+Return", hl.dsp.exec_cmd("kitty"))
 hl.bind("ALT+S", hl.dsp.exec_cmd("spotify"))
 hl.bind("ALT+F", hl.dsp.exec_cmd("zen-browser"))
-hl.bind("SUPER+E", hl.dsp.exec_cmd("yazi", { toggle = true }))
+hl.bind("SUPER+E", hl.dsp.exec_cmd("yazi"))
 hl.bind("SUPER+SHIFT+D", hl.dsp.exec_cmd("pkill rofi || rofi -show drun -theme ~/.config/rofi/style-3.rasi"))
 hl.bind("SUPER+W", hl.dsp.exec_cmd("bash /home/v3nom/.config/hypr/scripts/wallrofi.sh"))
 
