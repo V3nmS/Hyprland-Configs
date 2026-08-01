@@ -57,7 +57,35 @@ end
 hl.bind("ALT+Return", hl.dsp.exec_cmd("kitty"))
 hl.bind("ALT+S", hl.dsp.exec_cmd("spotify"))
 hl.bind("ALT+F", hl.dsp.exec_cmd("zen-browser"))
-hl.bind("SUPER+E", hl.dsp.exec_cmd("yazi"))
+-- Yazi como scratchpad: primera vez lo abre, la siguiente lo esconde, la
+-- siguiente reaparece en el mismo directorio (el proceso nunca muere).
+-- La regla que lo hace flotante, centrado y de 960x756 está en windowrules.lua.
+--
+-- ANTES era exec_cmd("yazi") a secas, que NO podía funcionar: yazi es una TUI
+-- y exec_cmd corre `sh -c yazi` sin terminal, así que el proceso arrancaba y
+-- se moría sin mostrar nada. Por eso va dentro de kitty.
+--
+-- El -o remember_window_size=no es necesario: tu kitty.conf lo trae en `yes`
+-- con initial_window_width 1200, y kitty pide ese tamaño por encima de la
+-- regla de Hyprland. Medido: con `yes` salía 1099x741, con `no` sale 960x756.
+-- Va como override del comando para no tocar tu kitty.conf global.
+hl.bind("SUPER+E", function()
+	local existe = false
+	for _, w in ipairs(hl.get_windows()) do
+		if w.class == "yazi-float" then
+			existe = true
+			break
+		end
+	end
+
+	-- Lanzarlo NO muestra el special workspace solo (comprobado: el workspace
+	-- activo seguía siendo el 1), así que el toggle va en ambos casos.
+	if not existe then
+		hl.dispatch(hl.dsp.exec_cmd("kitty --class yazi-float -o remember_window_size=no -e yazi"))
+	end
+
+	hl.dispatch(hl.dsp.workspace.toggle_special("yazi"))
+end, { description = "toggle yazi flotante y centrado" })
 hl.bind("SUPER+SHIFT+D", hl.dsp.exec_cmd("pkill rofi || rofi -show drun -theme ~/.config/rofi/style-3.rasi"))
 hl.bind("SUPER+W", hl.dsp.exec_cmd("bash /home/v3nom/.config/hypr/scripts/wallrofi.sh"))
 
