@@ -120,6 +120,11 @@ for i = 1, 9 do
 end
 hl.bind("ALT+0", hl.dsp.focus({ workspace = 10 })) -- 0 mapea a ws 10, convención estándar
 
+-- ============ MOVER VENTANA A WORKSPACE (SIN SEGUIRLA) ============
+for i = 1, 9 do
+	hl.bind("ALT+SHIFT+" .. i, hl.dsp.movetoworkspacesilent({ workspace = i }))
+end
+
 -- ============ MOVE WINDOWS (tiled) ============
 hl.bind("CTRL+SUPER+h", hl.dsp.window.move({ direction = "left" }))
 hl.bind("CTRL+SUPER+l", hl.dsp.window.move({ direction = "right" }))
