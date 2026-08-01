@@ -92,7 +92,8 @@ sudo -n cp "$WALL" "$SDDM_BG" 2>/dev/null &&
     notify-send "SDDM" "No se pudo actualizar SDDM sin sudo"
 
 # ── Autostart ─────────────────────────────────────────────────────────────
-sed -i "s|awww img .*|awww img $WALL|g" "$HOME/.config/hypr/lua/autostart.lua"
+sed -i "s|^.*swww img.*$|hl.exec_cmd(\"bash -c 'sleep 1; swww img $WALL'\")|" \
+    "$HOME/.config/hypr/lua/autostart.lua"
 
 # ── Waybar reload ─────────────────────────────────────────────────────────
 pkill waybar 2>/dev/null
