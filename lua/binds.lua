@@ -92,7 +92,6 @@ hl.bind("SUPER+L", hl.dsp.exec_cmd("hyprlock"))
 
 -- ============ FLOATING ============
 hl.bind("ALT+V", hl.dsp.window.float({ action = "toggle" }))
-hl.bind("CTRL+TAB", hl.dsp.exec_raw("alterzorder bottom")) -- ⚠️ no encontré equivalente nativo documentado, se queda con shim
 -- hl.bind("CTRL+TAB", hl.dsp.exec_raw("alterzorder top"))
 
 -- ============ SCREENSHOT REGIÓN ============
