@@ -134,11 +134,11 @@ for i = 1, 9 do
 end
 hl.bind("ALT+0", hl.dsp.focus({ workspace = 10 })) -- 0 mapea a ws 10, convención estándar
 
--- ============ MOVER VENTANA A WORKSPACE (silent: no te arrastra) ============
+-- ============ MOVER VENTANA A WORKSPACE (por ahora SÍ te arrastra, pendiente fix) ============
 for i = 1, 9 do
-	hl.bind("ALT+SHIFT+" .. i, hl.dsp.exec_cmd("hyprctl dispatch movetoworkspacesilent " .. i))
+	hl.bind("ALT+SHIFT+" .. i, hl.dsp.window.move({ workspace = i }))
 end
-hl.bind("ALT+SHIFT+0", hl.dsp.exec_cmd("hyprctl dispatch movetoworkspacesilent 10"))
+hl.bind("ALT+SHIFT+0", hl.dsp.window.move({ workspace = 10 })) -- 0 mapea a ws 10, misma convención
 
 -- ============ MOVE WINDOWS (tiled) ============
 hl.bind("CTRL+SUPER+h", hl.dsp.window.move({ direction = "left" }))
