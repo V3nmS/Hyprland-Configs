@@ -14,10 +14,55 @@
 -- El único que sí necesita distinguir es ALT+SHIFT+h/l, porque window.resize
 -- es inerte en scrolling (medido: 947px -> 947px) y ahí toca usar colresize.
 -- Para eso llevamos esta tabla, que solo escriben SUPER+SPACE / SUPER+BackSpace.
--- Vive en memoria: al recargar se vacía, y el reload también regresa todo a
--- dwindle, así que los dos quedan sincronizados.
+--
+-- PERSISTENCIA: las workspace_rule que se crean en runtime NO sobreviven a un
+-- `hyprctl reload` — Hyprland tira todas las rules y las reconstruye leyendo el
+-- config, así que cualquier ws en scrolling se regresaba solo a dwindle cada vez
+-- que algo disparaba un reload (cambiar wallpaper, editar un .lua, etc).
+-- Por eso la tabla se vuelca a disco y se relee aquí: como este archivo se
+-- ejecuta en cada carga de config, el reload se repara a sí mismo.
+
+local STATE_FILE = os.getenv("HOME") .. "/.cache/hypr/scrolling_ws"
 
 local scrolling_ws = {}
+
+-- Vuelca a disco los ws que están en scrolling (uno por línea).
+local function save_state()
+	local f = io.open(STATE_FILE, "w")
+	if not f then
+		return
+	end
+	for id, on in pairs(scrolling_ws) do
+		if on then
+			f:write(tostring(id), "\n")
+		end
+	end
+	f:close()
+end
+
+-- Relee el estado guardado y re-aplica las rules. Se llama una vez, al cargar.
+local function load_state()
+	-- El dir puede no existir en un arranque limpio; -p lo deja idempotente.
+	os.execute("mkdir -p " .. STATE_FILE:match("^(.*)/[^/]*$"))
+
+	local f = io.open(STATE_FILE, "r")
+	if not f then
+		return
+	end
+	for line in f:lines() do
+		local id = tonumber(line)
+		if id then
+			scrolling_ws[id] = true
+			hl.workspace_rule({
+				workspace = tostring(id),
+				layout = "scrolling",
+			})
+		end
+	end
+	f:close()
+end
+
+load_state()
 
 local function active_ws_id()
 	local ws = hl.get_active_workspace()
