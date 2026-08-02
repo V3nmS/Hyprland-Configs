@@ -89,6 +89,10 @@ local function set_scrolling(on)
 			layout = on and "scrolling" or "dwindle",
 		})
 
+		-- Persistir de inmediato: si el próximo reload llega solo (wallpaper,
+		-- editar un .lua), el estado ya está en disco y load_state lo restaura.
+		save_state()
+
 		hl.notification.create({
 			text = "ws " .. id .. ": " .. (on and "scrolling" or "dwindle"),
 			time = 1200,
