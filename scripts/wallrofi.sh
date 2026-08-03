@@ -15,18 +15,31 @@ ROFI_THEME="$HOME/.config/rofi/style-3.rasi"
     exit 1
 }
 
-WALL=$(find "$WALL_DIR" -type f \( \
+# Rutas completas en un array (null-delimited para aguantar espacios/raros)
+mapfile -d '' -t WALLS < <(find "$WALL_DIR" -type f \( \
     -iname "*.jpg" -o \
     -iname "*.jpeg" -o \
     -iname "*.png" -o \
     -iname "*.webp" \
-    \) | rofi \
+    \) -print0 | sort -z)
+
+[ ${#WALLS[@]} -eq 0 ] && {
+    notify-send "wallrofi" "No hay imágenes en $WALL_DIR"
+    exit 1
+}
+
+# Solo los nombres a rofi; -format i devuelve el índice de la selección
+IDX=$(printf '%s\n' "${WALLS[@]##*/}" | rofi \
     -dmenu \
     -i \
+    -format i \
     -theme "$ROFI_THEME" \
     -p "󰉔 Wallpaper")
 
-[ -z "$WALL" ] && exit 0
+# Vacío = ESC, -1 = texto custom que no matchea ninguna entrada
+[ -z "$IDX" ] || [ "$IDX" -lt 0 ] && exit 0
+
+WALL="${WALLS[$IDX]}"
 
 [ -x "$SETWALL" ] || chmod +x "$SETWALL"
 bash "$SETWALL" "$WALL"
