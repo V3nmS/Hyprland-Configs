@@ -2,17 +2,6 @@
 hl.config({
 	dwindle = {
 		preserve_split = true,
-
-		-- Hacia dónde se abre la ventana nueva al partir un split.
-		--   0 = del lado donde esté el puntero del mouse (default, impredecible)
-		--   1 = siempre izquierda/arriba
-		--   2 = siempre derecha/abajo
-		--
-		-- En 2 para que el preview de markdown (<leader>mp en nvim) caiga siempre
-		-- a la derecha de la terminal. Aplica a TODAS las ventanas nuevas, no solo
-		-- a esa: es el precio de que sea determinista en vez de depender de dónde
-		-- dejaste el mouse.
-		force_split = 2,
 	},
 	master = {
 		new_status = "master",
