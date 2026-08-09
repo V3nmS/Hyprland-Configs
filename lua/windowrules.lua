@@ -47,15 +47,20 @@ hl.window_rule({
 --
 -- El match NO puede ser "mdpreview" a secas: chromium ignora --class en Wayland,
 -- esa flag es de X11. El app_id que sí publica tiene la forma
---     chrome-<host>__-<perfil>
--- y el perfil se controla con --profile-directory. De ahí sale este string.
--- Medido con `hyprctl clients` en tu máquina, no adivinado. Si cambias el
--- --profile-directory del lado de nvim, este match deja de pegar.
+--     chrome-<host>_<path>-<perfil>
+-- donde el perfil sale de --profile-directory. Medido con `hyprctl clients`:
+--     chrome-localhost__page_1-mdpreview
+--
+-- Por eso es regex y no un string literal: el `page_1` del medio viene del path
+-- de la URL (/page/1) y CAMBIA de número con cada buffer que previsualizas.
+-- Anclar al sufijo `-mdpreview` es lo único estable, porque el perfil sí lo
+-- controlamos nosotros desde nvim. Si cambias el --profile-directory allá,
+-- este match deja de pegar.
 --
 -- Cae a la derecha por `force_split = 2` en layouts.lua.
 hl.window_rule({
 	name = "mdpreview",
-	match = { class = "chrome-localhost__-mdpreview" },
+	match = { class = "^chrome-.*-mdpreview$" },
 	tile = true,
 	-- Lo importante: que NO robe el foco al abrirse. Sin esto, cada <leader>mp
 	-- te manda el teclado a chromium y acabas escribiendo la nota en el navegador.
