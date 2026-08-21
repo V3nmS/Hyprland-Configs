@@ -152,6 +152,11 @@ hl.bind("ALT+SPACE", hl.dsp.layout("togglesplit")) -- dwindle only, inerte en sc
 hl.bind("ALT+R", hl.dsp.exec_cmd("~/.config/waybar/scripts/launch.sh"))
 hl.bind("ALT+SHIFT+R", hl.dsp.exec_cmd("~/.config/hypr/scripts/reload.sh"))
 
+-- ============================================================================
+-- TOGGLE DE WAYBAR
+-- ===========================================================================
+hl.bind("SUPER + B", hl.dsp.exec_cmd("killall -SIGUSR1 waybar"))
+
 -- =============================================================================
 -- SCROLLING LAYOUT (core desde Hyprland 0.54, NO es plugin)
 -- =============================================================================
