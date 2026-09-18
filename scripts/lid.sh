@@ -46,6 +46,7 @@ PIDFILE="/tmp/lid-${UID:-$(id -u)}.pid"
 LOCKFILE="/tmp/lid-${UID:-$(id -u)}.lock"
 
 DEBOUNCE=0.35      # s. los eventos llegan en ráfaga; se coalescen
+QUIET=1.2          # s. de sordera tras aplicar, para no oír nuestro propio eco
 SETTLE=0.45        # s. de espera tras prender una salida, antes de verificar
 
 log() { printf '[lid.sh] %s\n' "$*" >&2; }
@@ -358,9 +359,21 @@ daemon() {
     # minuto y los traps corren.
     while :; do
         if read -r -t 60 ev <&8; then
+            # Ráfaga: los eventos llegan de a montones por un solo cambio.
             while read -r -t "$DEBOUNCE" _ <&8; do :; done
+
             log "evento: $ev -> re-aplicando"
             apply_state
+
+            # MUTE — imprescindible. Encender o apagar una salida hace que
+            # Hyprland emita monitoradded / monitorremoved, o sea que nuestra
+            # propia reconfiguración nos vuelve a despertar y apply_state se
+            # re-ejecuta en bucle. Cada vuelta llamaba a move_workspaces_to,
+            # que arrastra todos los workspaces de monitor: ése era el
+            # "bug raro de workspaces".
+            #
+            # Aquí se tragan los ecos que generamos nosotros mismos.
+            while read -r -t "$QUIET" _ <&8; do :; done
         fi
     done
 }
