@@ -232,10 +232,19 @@ daemon() {
     rm -f "$FIFO"          # ya no hace falta el nodo en disco
 
     CHILDREN=()
+    # Matar solo al subshell deja huérfanos a acpi_listen y socat (se
+    # reparentan a init y siguen vivos). Hay que bajar por el árbol.
+    kill_tree() {
+        local pid="$1" kid
+        for kid in $(pgrep -P "$pid" 2>/dev/null); do
+            kill_tree "$kid"
+        done
+        kill "$pid" 2>/dev/null
+    }
     cleanup() {
         local p
         for p in "${CHILDREN[@]:-}"; do
-            [ -n "$p" ] && kill "$p" 2>/dev/null
+            [ -n "$p" ] && kill_tree "$p"
         done
     }
     trap cleanup EXIT INT TERM
@@ -280,8 +289,31 @@ status() {
     monitors_json | jq -r '.[] | "  \(.name)  pos=\(.x)x\(.y)  disabled=\(.disabled // false)"'
 }
 
+# Apaga el daemon vivo y todo lo que colgaba de él, sin tocar el lockfile
+# (borrar el lockfile rompe flock: el proceso viejo se queda con el inode
+#  y el nuevo crea otro archivo, así que arrancan dos daemons).
+stop_daemon() {
+    local pid kid
+    for pid in $(pgrep -f 'bash .*/lid\.sh --daemon' 2>/dev/null); do
+        [ "$pid" = "$$" ] && continue
+        for kid in $(pgrep -P "$pid" 2>/dev/null); do
+            pkill -P "$kid" 2>/dev/null
+            kill "$kid" 2>/dev/null
+        done
+        kill "$pid" 2>/dev/null
+    done
+    sleep 0.5
+    pkill -x acpi_listen 2>/dev/null
+    pgrep -f 'socat .*\.socket2\.sock' | xargs -r kill 2>/dev/null
+    return 0
+}
+
 case "${1:-}" in
 --daemon) daemon ;;
+--stop)   stop_daemon; echo "daemon detenido" ;;
+--restart) stop_daemon; sleep 0.5
+           setsid nohup "$0" --daemon >/tmp/lid-daemon.log 2>&1 </dev/null &
+           sleep 2; echo "daemon reiniciado"; status ;;
 --apply)  apply_state ;;
 --status) status ;;
 *)        apply_state ;;
