@@ -142,20 +142,6 @@ monitor_disable() {
     return 1
 }
 
-# Limpia un `disabled = true` pegado, SIN prender nada ahora mismo.
-#
-# POR QUÉ ESTO ES CRÍTICO: `hl.monitor({disabled = true})` deja una regla
-# PERSISTENTE. Si se le aplica al HDMI cuando lo desconectas, al volver a
-# conectarlo Hyprland lo levanta apagado ("drm: HDMI-A-1 is disabled,
-# releasing crtc") y NO da imagen. Peor: un monitor que nace deshabilitado
-# no emite `monitoradded`, así que el daemon nunca se entera y se queda
-# muerto para siempre. Por eso una salida FÍSICAMENTE AUSENTE jamás se
-# deshabilita: solo se le limpia la regla.
-clear_disabled() {
-    local out="$1"
-    hypr_eval "hl.monitor({ output = \"$out\", disabled = false, mode = \"preferred\", position = \"auto\", scale = 1 })"
-}
-
 # Mueve SOLO los workspaces que existen de verdad. La versión vieja iteraba
 # 1..9 a ciegas, creando ruido y moviendo cosas que no estaban.
 move_workspaces_to() {
@@ -177,16 +163,21 @@ move_workspaces_to() {
 # pero lo reporta como ERROR y el arreglo queda indefinido; de ahí el
 # "Monitor HDMI-A-1: detected overlap with layout".
 laptop_only_setup() {
-    # El externo está físicamente desconectado (es la única forma de llegar
-    # aquí). No hay nada que apagar: Hyprland ya lo quitó solo. Lo único que
-    # se hace es LIMPIARLE cualquier disabled pegado, para que la próxima vez
-    # que lo conectes levante con imagen y emita su monitoradded.
-    clear_disabled "$EXTERNAL"
-
-    monitor_enable "$LAPTOP" "$LAPTOP_MODE" "$LAPTOP_POS_SOLO" || {
-        log "no pude prender $LAPTOP"
-        return 1
-    }
+    if mon_enabled "$LAPTOP"; then
+        # Ya hay pantalla viva: se puede apagar el externo sin riesgo, y al
+        # quedar solo el eDP su posición final ya no traslapa con nada.
+        monitor_disable "$EXTERNAL"
+        monitor_enable "$LAPTOP" "$LAPTOP_MODE" "$LAPTOP_POS_SOLO" || return 1
+    else
+        # El eDP está apagado (venimos de tapa cerrada). Se enciende lejos,
+        # se apaga el externo, y hasta entonces se trae a 0x0.
+        monitor_enable "$LAPTOP" "$LAPTOP_MODE" "$STAGE_POS" || {
+            log "no pude prender $LAPTOP; no apago nada"
+            return 1
+        }
+        monitor_disable "$EXTERNAL"
+        monitor_enable "$LAPTOP" "$LAPTOP_MODE" "$LAPTOP_POS_SOLO"
+    fi
     move_workspaces_to "$LAPTOP"
 }
 
