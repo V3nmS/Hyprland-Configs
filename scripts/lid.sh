@@ -278,11 +278,23 @@ apply_state() {
     log "  después mon: $(monitors_json | jq -Sc '[.[]|{name,x,y,d:(.disabled//false)}]')"
     log "  después ws : $(hyprctl workspaces -j | jq -Sc '[.[]|{id,mon:.monitor}]')"
 
+    # Waybar se queda con la lista de workspaces persistentes del arranque y no
+    # la recalcula al cambiar los monitores: de ahí la barra con workspaces de
+    # más y el indicador activo trabado. Se regenera y se relanza SOLO aquí,
+    # o sea únicamente cuando hubo transición de verdad — no en cada evento.
+    relaunch_waybar
+
     # Red de seguridad final: jamás cero salidas prendidas.
     if [ "$(enabled_count)" -lt 1 ]; then
         log "QUEDARON 0 MONITORES PRENDIDOS — recuperando $LAPTOP"
         hypr_eval "hl.monitor({ output = \"$LAPTOP\", disabled = false, mode = \"$LAPTOP_MODE\", position = \"$LAPTOP_POS_SOLO\", scale = 1 })"
     fi
+}
+
+relaunch_waybar() {
+    local sh="$HOME/.config/waybar/scripts/launch.sh"
+    [ -x "$sh" ] || return 0
+    setsid nohup bash "$sh" >/dev/null 2>&1 </dev/null &
 }
 
 # --- Daemon -----------------------------------------------------------------
