@@ -78,6 +78,10 @@ mon_enabled() {
         'any(.[]; .name == $n and (.disabled // false) == false)' >/dev/null 2>&1
 }
 
+mon_pos() {
+    monitors_json | jq -r --arg n "$1" '.[] | select(.name == $n) | "\(.x)x\(.y)"' 2>/dev/null
+}
+
 enabled_count() {
     monitors_json | jq '[.[] | select((.disabled // false) == false)] | length' 2>/dev/null || echo 0
 }
@@ -207,21 +211,66 @@ dual_setup() {
     fi
 }
 
+# ¿La pantalla YA está como la quiere este escenario? Si sí, apply_state no
+# toca absolutamente nada.
+#
+# Esto no es una optimización: es corrección. Sin este guardia, CADA evento
+# re-ejecutaba move_workspaces_to, que arrastra todos los workspaces al
+# monitor destino. Con acpi_listen escupiendo eventos de batería y CPU cada
+# pocos segundos, los workspaces se reacomodaban solos todo el tiempo — el
+# "bug raro de workspaces".
+layout_ok() {
+    case "$1" in
+    laptop)
+        mon_enabled "$LAPTOP" || return 1
+        [ "$(mon_pos "$LAPTOP")" = "$LAPTOP_POS_SOLO" ] || return 1
+        mon_enabled "$EXTERNAL" && return 1
+        return 0
+        ;;
+    external)
+        mon_enabled "$EXTERNAL" || return 1
+        mon_enabled "$LAPTOP" && return 1
+        [ "$(mon_pos "$EXTERNAL")" = "$EXTERNAL_POS" ] || return 1
+        return 0
+        ;;
+    dual)
+        mon_enabled "$EXTERNAL" || return 1
+        mon_enabled "$LAPTOP" || return 1
+        [ "$(mon_pos "$EXTERNAL")" = "$EXTERNAL_POS" ] || return 1
+        [ "$(mon_pos "$LAPTOP")" = "$LAPTOP_POS_DUAL" ] || return 1
+        return 0
+        ;;
+    esac
+    return 1
+}
+
 apply_state() {
-    local ext=0 lid=0
+    local ext=0 lid=0 scenario
     external_connected && ext=1
     lid_closed && lid=1
 
     if [ "$lid" = 1 ] && [ "$ext" = 1 ]; then
-        external_only_setup
+        scenario=external
     elif [ "$ext" = 1 ]; then
-        dual_setup
+        scenario=dual
     else
         # Sin HDMI: siempre laptop, tenga la tapa como la tenga.
         # (Tapa cerrada y sin externo = no hay a dónde mandar nada;
-        #  apagar el eDP aquí es justo el bug que se está arreglando.)
-        laptop_only_setup
+        #  apagar el eDP aquí es justo el bug original.)
+        scenario=laptop
     fi
+
+    if [ "${1:-}" != "--force" ] && layout_ok "$scenario"; then
+        return 0
+    fi
+
+    log "aplicando escenario: $scenario (tapa=$lid externo=$ext)"
+
+    case "$scenario" in
+    external) external_only_setup ;;
+    dual)     dual_setup ;;
+    laptop)   laptop_only_setup ;;
+    esac
 
     # Red de seguridad final: jamás cero salidas prendidas.
     if [ "$(enabled_count)" -lt 1 ]; then
@@ -277,7 +326,12 @@ daemon() {
     trap cleanup EXIT INT TERM
 
     # Fuente 1: tapa (ACPI).
-    ( acpi_listen 2>/dev/null | sed -u 's/^/acpi /' >&8 ) &
+    # SOLO eventos de tapa. acpi_listen escupe además batería, CPU, wmi y el
+    # jack de audio cada pocos segundos; sin este filtro el daemon despierta
+    # constantemente sin que nada relacionado con monitores haya cambiado.
+    ( acpi_listen 2>/dev/null \
+        | grep --line-buffered -iE 'button/lid' \
+        | sed -u 's/^/acpi /' >&8 ) &
     CHILDREN+=("$!")
 
     # Fuente 2: hotplug de monitores, vía el socket de eventos de Hyprland.
