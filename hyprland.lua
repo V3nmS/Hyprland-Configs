@@ -39,6 +39,10 @@ require("misc")
 -- Input (kb_layout, touchpad, gestos, mouse)
 require("input")
 
+-- Reparto de workspaces por monitor (antes de binds: binds.lua también
+-- escribe workspace_rule, para el layout scrolling, y debe poder pisar encima)
+require("workspaces")
+
 -- Binds (bind / binde / bindm, vía el traductor)
 require("binds")
 
