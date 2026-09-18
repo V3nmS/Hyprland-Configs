@@ -35,10 +35,6 @@ EXTERNAL_MODE="preferred"   # "preferred" aguanta cualquier monitor ajeno
 
 # Posiciones: externo arriba, laptop abajo.
 EXTERNAL_POS="0x0"
-# Posición temporal, a la derecha de todo. Se usa para encender una salida
-# SIN que se traslape con la que ya está viva: Hyprland tira
-# "detected overlap with layout" si dos monitores comparten coordenadas.
-STAGE_POS="3840x0"
 LAPTOP_POS_DUAL="0x1080"
 LAPTOP_POS_SOLO="0x0"
 
@@ -154,33 +150,20 @@ move_workspaces_to() {
 
 # --- Escenarios -------------------------------------------------------------
 
-# Nunca se enciende una salida encima de otra. Hyprland acepta el traslape
-# pero lo reporta como ERROR y el arreglo queda indefinido; de ahí el
-# "Monitor HDMI-A-1: detected overlap with layout".
 laptop_only_setup() {
-    if mon_enabled "$LAPTOP"; then
-        # Ya hay pantalla viva: se puede apagar el externo sin riesgo, y al
-        # quedar solo el eDP su posición final ya no traslapa con nada.
-        monitor_disable "$EXTERNAL"
-        monitor_enable "$LAPTOP" "$LAPTOP_MODE" "$LAPTOP_POS_SOLO" || return 1
-    else
-        # El eDP está apagado (venimos de tapa cerrada). Se enciende lejos,
-        # se apaga el externo, y hasta entonces se trae a 0x0.
-        monitor_enable "$LAPTOP" "$LAPTOP_MODE" "$STAGE_POS" || {
-            log "no pude prender $LAPTOP; no apago nada"
-            return 1
-        }
-        monitor_disable "$EXTERNAL"
-        monitor_enable "$LAPTOP" "$LAPTOP_MODE" "$LAPTOP_POS_SOLO"
-    fi
+    monitor_enable "$LAPTOP" "$LAPTOP_MODE" "$LAPTOP_POS_SOLO" || {
+        log "no pude prender $LAPTOP; no apago nada"
+        return 1
+    }
+    monitor_disable "$EXTERNAL"
     move_workspaces_to "$LAPTOP"
 }
 
 external_only_setup() {
-    # GUARDIA: el externo se prende y se VERIFICA antes de apagar el panel de
-    # la laptop. Se prende en STAGE_POS para no traslaparse con el eDP, que
-    # en este momento todavía está vivo en 0x0.
-    if ! monitor_enable "$EXTERNAL" "$EXTERNAL_MODE" "$STAGE_POS"; then
+    # GUARDIA: primero se prende el externo y se VERIFICA. Solo si quedó vivo
+    # se apaga el panel de la laptop. Esto es lo que vuelve imposible el
+    # apagón a ciegas de la versión anterior.
+    if ! monitor_enable "$EXTERNAL" "$EXTERNAL_MODE" "$EXTERNAL_POS"; then
         log "$EXTERNAL no levantó; me quedo en solo-laptop"
         laptop_only_setup
         return
@@ -188,23 +171,16 @@ external_only_setup() {
 
     move_workspaces_to "$EXTERNAL"
     monitor_disable "$LAPTOP"
-
-    # Ya sin el eDP encendido, 0x0 quedó libre.
-    monitor_enable "$EXTERNAL" "$EXTERNAL_MODE" "$EXTERNAL_POS" \
-        || log "aviso: $EXTERNAL no llegó a $EXTERNAL_POS"
 }
 
 dual_setup() {
-    # Primero se baja el eDP a 0x1080 para liberar 0x0, y hasta entonces se
-    # mete el externo ahí. Al revés se traslapan durante el paso intermedio.
-    monitor_enable "$LAPTOP" "$LAPTOP_MODE" "$LAPTOP_POS_DUAL" \
-        || log "aviso: $LAPTOP no reposicionó"
-
     if ! monitor_enable "$EXTERNAL" "$EXTERNAL_MODE" "$EXTERNAL_POS"; then
         log "$EXTERNAL no levantó; me quedo en solo-laptop"
         laptop_only_setup
         return
     fi
+    monitor_enable "$LAPTOP" "$LAPTOP_MODE" "$LAPTOP_POS_DUAL" \
+        || log "aviso: $LAPTOP no reposicionó"
 }
 
 apply_state() {
