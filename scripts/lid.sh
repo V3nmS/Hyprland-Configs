@@ -266,12 +266,17 @@ apply_state() {
     fi
 
     log "aplicando escenario: $scenario (tapa=$lid externo=$ext)"
+    log "  antes  mon: $(monitors_json | jq -Sc '[.[]|{name,x,y,d:(.disabled//false)}]')"
+    log "  antes  ws : $(hyprctl workspaces -j | jq -Sc '[.[]|{id,mon:.monitor}]')"
 
     case "$scenario" in
     external) external_only_setup ;;
     dual)     dual_setup ;;
     laptop)   laptop_only_setup ;;
     esac
+
+    log "  después mon: $(monitors_json | jq -Sc '[.[]|{name,x,y,d:(.disabled//false)}]')"
+    log "  después ws : $(hyprctl workspaces -j | jq -Sc '[.[]|{id,mon:.monitor}]')"
 
     # Red de seguridad final: jamás cero salidas prendidas.
     if [ "$(enabled_count)" -lt 1 ]; then
