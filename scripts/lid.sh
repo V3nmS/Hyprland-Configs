@@ -271,10 +271,16 @@ daemon() {
     apply_state
 
     # Coalesce: tras el primer evento se drena la ráfaga y se aplica una sola vez.
-    while read -r ev <&8; do
-        while read -r -t "$DEBOUNCE" _ <&8; do :; done
-        log "evento: $ev -> re-aplicando"
-        apply_state
+    # El -t 60 no es cosmético: sin timeout, bash se queda dentro del builtin
+    # `read` y NO procesa el trap de TERM, así que el daemon se vuelve
+    # inmatable y se acumulan instancias. Con timeout el loop respira cada
+    # minuto y los traps corren.
+    while :; do
+        if read -r -t 60 ev <&8; then
+            while read -r -t "$DEBOUNCE" _ <&8; do :; done
+            log "evento: $ev -> re-aplicando"
+            apply_state
+        fi
     done
 }
 
@@ -302,9 +308,17 @@ stop_daemon() {
         done
         kill "$pid" 2>/dev/null
     done
-    sleep 0.5
+    sleep 0.7
+    # Escalada: lo que siga en pie tras el TERM se va con KILL. Un daemon
+    # atorado en `read` puede ignorar el TERM, y dos daemons vivos se pelean
+    # por la configuración de monitores.
+    for pid in $(pgrep -f 'bash .*/lid\.sh --daemon' 2>/dev/null); do
+        [ "$pid" = "$$" ] && continue
+        kill -9 "$pid" 2>/dev/null
+    done
     pkill -x acpi_listen 2>/dev/null
-    pgrep -f 'socat .*\.socket2\.sock' | xargs -r kill 2>/dev/null
+    pgrep -f 'socat .*\.socket2\.sock' | xargs -r kill -9 2>/dev/null
+    sleep 0.3
     return 0
 }
 
