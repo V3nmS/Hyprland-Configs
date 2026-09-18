@@ -212,23 +212,34 @@ sock2_path() {
 }
 
 daemon() {
-    local LOCKFILE="/tmp/lid-${UID}.lock"
+    LOCKFILE="/tmp/lid-${UID}.lock"
     exec 9>"$LOCKFILE"
     flock -n 9 || { log "ya hay un daemon corriendo"; exit 1; }
 
-    local FIFO
     FIFO=$(mktemp -u "/tmp/lid-events-${UID}-XXXXXX")
     mkfifo "$FIFO" || exit 1
-    # shellcheck disable=SC2064
-    trap "rm -f '$FIFO'; kill 0" EXIT INT TERM
+
+    # Abrir en lectura+escritura (<>) mantiene el FIFO vivo: nunca da EOF
+    # aunque un escritor muera, y no bloquea al abrirlo.
+    exec 8<>"$FIFO"
+    rm -f "$FIFO"          # ya no hace falta el nodo en disco
+
+    CHILDREN=()
+    cleanup() {
+        local p
+        for p in "${CHILDREN[@]:-}"; do
+            [ -n "$p" ] && kill "$p" 2>/dev/null
+        done
+    }
+    trap cleanup EXIT INT TERM
 
     # Fuente 1: tapa (ACPI).
-    ( acpi_listen 2>/dev/null | sed -u 's/^/acpi /' > "$FIFO" ) &
+    ( acpi_listen 2>/dev/null | sed -u 's/^/acpi /' >&8 ) &
+    CHILDREN+=("$!")
 
     # Fuente 2: hotplug de monitores, vía el socket de eventos de Hyprland.
-    # ESTO es lo que le faltaba al script viejo.
+    # ESTO es lo que le faltaba al script viejo: el HDMI no genera evento ACPI.
     (
-        local sock
         while :; do
             sock=$(sock2_path)
             if [ -n "$sock" ]; then
@@ -237,15 +248,16 @@ daemon() {
                     | sed -u 's/^/hypr /'
             fi
             sleep 2   # el socket se recrea si Hyprland reinicia
-        done > "$FIFO"
+        done >&8
     ) &
+    CHILDREN+=("$!")
 
     apply_state
 
-    # Coalesce: tras el primer evento se drena la ráfaga y se aplica una vez.
-    local ev
-    while read -r ev < "$FIFO"; do
-        while read -r -t "$DEBOUNCE" _ < "$FIFO"; do :; done
+    # Coalesce: tras el primer evento se drena la ráfaga y se aplica una sola vez.
+    while read -r ev <&8; do
+        while read -r -t "$DEBOUNCE" _ <&8; do :; done
+        log "evento: $ev -> re-aplicando"
         apply_state
     done
 }
