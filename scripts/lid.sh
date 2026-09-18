@@ -98,9 +98,16 @@ lid_closed() {
 
 # --- Operaciones sobre monitores --------------------------------------------
 
+# OJO — VERIFICADO 2026-09-18 contra Hyprland 0.56.2:
+# una salida marcada `disabled = true` NO revive pasándole mode/position.
+# Se queda apagada para siempre hasta que se le manda `disabled = false`
+# EXPLÍCITO. Ese era el otro medio bug de la pantalla negra: al abrir la tapa
+# el script "reencendía" el eDP con mode+position y no pasaba absolutamente
+# nada. Por eso aquí `disabled = false` va SIEMPRE, no solo cuando creemos
+# que hace falta.
 monitor_enable() {
     local out="$1" mode="$2" pos="$3"
-    hypr_eval "hl.monitor({ output = \"$out\", mode = \"$mode\", position = \"$pos\", scale = 1 })" || return 1
+    hypr_eval "hl.monitor({ output = \"$out\", disabled = false, mode = \"$mode\", position = \"$pos\", scale = 1 })" || return 1
     sleep "$SETTLE"
     mon_enabled "$out"
 }
@@ -192,7 +199,7 @@ apply_state() {
     # Red de seguridad final: jamás cero salidas prendidas.
     if [ "$(enabled_count)" -lt 1 ]; then
         log "QUEDARON 0 MONITORES PRENDIDOS — recuperando $LAPTOP"
-        hypr_eval "hl.monitor({ output = \"$LAPTOP\", mode = \"$LAPTOP_MODE\", position = \"$LAPTOP_POS_SOLO\", scale = 1 })"
+        hypr_eval "hl.monitor({ output = \"$LAPTOP\", disabled = false, mode = \"$LAPTOP_MODE\", position = \"$LAPTOP_POS_SOLO\", scale = 1 })"
     fi
 }
 
