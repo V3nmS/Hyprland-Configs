@@ -38,6 +38,9 @@ EXTERNAL_POS="0x0"
 LAPTOP_POS_DUAL="0x1080"
 LAPTOP_POS_SOLO="0x0"
 
+PIDFILE="/tmp/lid-${UID:-$(id -u)}.pid"
+LOCKFILE="/tmp/lid-${UID:-$(id -u)}.lock"
+
 DEBOUNCE=0.35      # s. los eventos llegan en ráfaga; se coalescen
 SETTLE=0.45        # s. de espera tras prender una salida, antes de verificar
 
@@ -219,9 +222,9 @@ sock2_path() {
 }
 
 daemon() {
-    LOCKFILE="/tmp/lid-${UID}.lock"
     exec 9>"$LOCKFILE"
     flock -n 9 || { log "ya hay un daemon corriendo"; exit 1; }
+    echo "$$" > "$PIDFILE"
 
     FIFO=$(mktemp -u "/tmp/lid-events-${UID}-XXXXXX")
     mkfifo "$FIFO" || exit 1
@@ -291,35 +294,61 @@ status() {
     echo "$EXTERNAL       : $(external_connected && echo conectado || echo desconectado)"
     echo "monitores vivos : $(enabled_count)"
     echo "socket2         : $(sock2_path || echo '(no encontrado)')"
+    echo "daemon          : $(daemon_running && echo "vivo (pid $(cat "$PIDFILE"))" || echo 'NO corre')"
     echo
     monitors_json | jq -r '.[] | "  \(.name)  pos=\(.x)x\(.y)  disabled=\(.disabled // false)"'
 }
 
-# Apaga el daemon vivo y todo lo que colgaba de él, sin tocar el lockfile
-# (borrar el lockfile rompe flock: el proceso viejo se queda con el inode
-#  y el nuevo crea otro archivo, así que arrancan dos daemons).
+# Apaga el daemon vivo y todo lo que colgaba de él.
+#
+# Va por PID file, NO por `pgrep -f 'lid.sh --daemon'`: pgrep -f compara
+# contra la línea de comando COMPLETA de todo proceso, así que una shell que
+# simplemente mencione esa cadena (un grep, un echo, este propio script)
+# matchea y se autodestruye. Ya pasó.
+#
+# Tampoco se borra el lockfile: borrarlo rompe flock, porque el proceso viejo
+# se queda con el inode y el nuevo crea un archivo distinto -> dos daemons.
 stop_daemon() {
-    local pid kid
-    for pid in $(pgrep -f 'bash .*/lid\.sh --daemon' 2>/dev/null); do
-        [ "$pid" = "$$" ] && continue
-        for kid in $(pgrep -P "$pid" 2>/dev/null); do
-            pkill -P "$kid" 2>/dev/null
-            kill "$kid" 2>/dev/null
+    local pid kid gk
+
+    [ -f "$PIDFILE" ] || { log "no hay PID file; nada que detener"; return 0; }
+    pid=$(cat "$PIDFILE" 2>/dev/null)
+
+    if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
+        rm -f "$PIDFILE"
+        return 0
+    fi
+
+    # De abajo hacia arriba: nietos (acpi_listen, socat, grep, sed), hijos
+    # (los dos subshells) y al final el padre.
+    for kid in $(pgrep -P "$pid" 2>/dev/null); do
+        for gk in $(pgrep -P "$kid" 2>/dev/null); do
+            kill "$gk" 2>/dev/null
         done
-        kill "$pid" 2>/dev/null
+        kill "$kid" 2>/dev/null
     done
+    kill "$pid" 2>/dev/null
+
     sleep 0.7
-    # Escalada: lo que siga en pie tras el TERM se va con KILL. Un daemon
-    # atorado en `read` puede ignorar el TERM, y dos daemons vivos se pelean
-    # por la configuración de monitores.
-    for pid in $(pgrep -f 'bash .*/lid\.sh --daemon' 2>/dev/null); do
-        [ "$pid" = "$$" ] && continue
+
+    # Escalada: un daemon atorado en `read` puede ignorar el TERM.
+    if kill -0 "$pid" 2>/dev/null; then
+        for kid in $(pgrep -P "$pid" 2>/dev/null); do
+            for gk in $(pgrep -P "$kid" 2>/dev/null); do kill -9 "$gk" 2>/dev/null; done
+            kill -9 "$kid" 2>/dev/null
+        done
         kill -9 "$pid" 2>/dev/null
-    done
-    pkill -x acpi_listen 2>/dev/null
-    pgrep -f 'socat .*\.socket2\.sock' | xargs -r kill -9 2>/dev/null
-    sleep 0.3
+    fi
+
+    rm -f "$PIDFILE"
     return 0
+}
+
+daemon_running() {
+    local pid
+    [ -f "$PIDFILE" ] || return 1
+    pid=$(cat "$PIDFILE" 2>/dev/null)
+    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null
 }
 
 case "${1:-}" in
