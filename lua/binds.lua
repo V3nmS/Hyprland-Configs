@@ -140,6 +140,14 @@ hl.bind("SUPER+E", function()
 end, { description = "toggle yazi flotante y centrado" })
 hl.bind("SUPER+SHIFT+D", hl.dsp.exec_cmd("pkill rofi || rofi -show drun -theme ~/.config/rofi/style-3.rasi"))
 hl.bind("SUPER+W", hl.dsp.exec_cmd("bash /home/v3nom/.config/hypr/scripts/wallrofi.sh"))
+-- Historial del clipboard: eliges una entrada y queda copiada, lista para pegar
+hl.bind(
+	"SUPER+SHIFT+V",
+	hl.dsp.exec_cmd(
+		"pkill rofi || cliphist list | rofi -dmenu -i -p 'clip' -display-columns 2 -theme ~/.config/rofi/style-3.rasi | cliphist decode | wl-copy"
+	),
+	{ description = "historial del clipboard (cliphist + rofi)" }
+)
 
 -- =============================================================================
 -- GESTIÓN DE VENTANAS
