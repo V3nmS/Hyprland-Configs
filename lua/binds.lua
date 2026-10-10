@@ -140,6 +140,9 @@ hl.bind("SUPER+E", function()
 end, { description = "toggle yazi flotante y centrado" })
 hl.bind("SUPER+SHIFT+D", hl.dsp.exec_cmd("pkill rofi || rofi -show drun -theme ~/.config/rofi/style-3.rasi"))
 hl.bind("SUPER+W", hl.dsp.exec_cmd("bash /home/v3nom/.config/hypr/scripts/wallrofi.sh"))
+-- Mezclador de audio (wiremix) flotante, toggle tipo scratchpad como yazi.
+-- La lógica vive en el script para compartirla con el clic derecho de waybar.
+hl.bind("SUPER+A", hl.dsp.exec_cmd("~/.config/waybar/scripts/wiremix-toggle.sh"), { description = "toggle mezclador wiremix" })
 -- Historial del clipboard: eliges una entrada y queda copiada, lista para pegar
 hl.bind(
 	"SUPER+SHIFT+V",

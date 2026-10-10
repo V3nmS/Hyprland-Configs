@@ -39,3 +39,16 @@ hl.window_rule({
 	size = { "(monitor_w*0.5)", "(monitor_h*0.7)" },
 	workspace = "special:yazi",
 })
+
+-- Mezclador wiremix como scratchpad (SUPER+A, o clic derecho al volumen en
+-- waybar). Mismo truco que yazi: kitty le pone la clase "wiremix-float" y el
+-- special workspace deja esconderlo sin matar el proceso.
+-- El toggle vive en ~/.config/waybar/scripts/wiremix-toggle.sh.
+hl.window_rule({
+	name = "mixer-scratchpad",
+	match = { class = "wiremix-float" },
+	float = true,
+	center = true,
+	size = { "(monitor_w*0.45)", "(monitor_h*0.55)" },
+	workspace = "special:mixer",
+})
